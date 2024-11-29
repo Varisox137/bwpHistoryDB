@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{% block label_title %}{% endblock %}</title>
+    <style>
+        body { padding: 150px; text-align: center; font: 20px Helvetica, sans-serif; color: #333; }
+        h1 { font-size: 50px; }
+        footer { position: fixed; left: 0; bottom: 0; width: 100%; font-size: 12px; }
+    </style>
+</head>
+<body>
+    <h1>{% block h1_title %}{% endblock %}</h1>
+    <div>
+        <p>{% block message %}{% endblock %}</p>
+        <a href="/">Back</a>
+    </div>
+    <footer>
+        <p>Copyright &copy; Varisox137</p>
+    </footer>
+</body>
+</html>

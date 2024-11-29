@@ -1,0 +1,4 @@
+{
+    "user-agent": "python-httpx",
+    "login_timeout": 30
+}
