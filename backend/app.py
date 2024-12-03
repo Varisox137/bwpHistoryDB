@@ -3,6 +3,7 @@
 import flask
 from flask import Flask, request, jsonify, render_template
 from flask_migrate import Migrate
+from sqlalchemy import inspect
 # 内置模块
 import os
 import datetime as dt
@@ -287,19 +288,21 @@ def query():
         # 数据模型不存在
         return make_response(400, 'Unknown item_model')
     # 以下保证了数据模型存在，开始逐步考虑查询请求
+    inspector=inspect(item_class)
+    primary_key=inspector.primary_key[0].name # 动态获取数据模型的主键字段名
     data_fields=item_class.fields # 获取数据模型的所有字段
     if not search_value:
         # 没有指定搜索值，则返回表中的全部数据
-        data_list=item_class.query.all()
+        data_list=(item_class.query
+                   .order_by(getattr(item_class, primary_key).asc())
+                   .all())
         data_list=[item.to_dict() for item in data_list]
         return make_response(data={'fields': data_fields, 'list': data_list})
-    # 以下保证了数据模型存在、且搜索值非空，首先检查搜索值的类型是否合理
+    # 以下保证了数据模型存在、且搜索值非空，首先检查搜索值的类型是否为字符串
+    print(f'{search_value=}')
     if not isinstance(search_value, str):
         # 搜索值类型错误
         return make_response(400, 'Invalid search_value')
-    if search_value.isdigit():
-        # 整数搜索值，则转换为整数类型
-        search_value=int(search_value)
     # 以下保证了数据模型存在、搜索值非空且类型合理，接下来考虑要查询的字段
     if not query_field or query_field=='Default':
         # 搜索值非空，但未指定查询字段，或者指定使用默认字段
@@ -315,8 +318,13 @@ def query():
         return make_response(400, 'Invalid query_field')
     # 查询字段非空、非默认、修改为非默认、存在于模型字段映射字典中，于是获取相应的字段类型和模型字段
     field_type=FIELDS_TYPE_MAPPING[item_model][query_field][2]
+    print(f'{field_type=}')
     model_field=getattr(item_class, query_field)
-    # 以下保证了数据模型存在、搜索值非空且类型合理、模型字段存在，首先检查搜索值的类型与模型字段所要求的类型是否匹配
+    # 以下保证了数据模型存在、搜索值非空且类型合理、具体模型字段存在，首先检查搜索值的类型与模型字段所要求的类型是否匹配
+    # 可能需要进行类型转换
+    if FIELDS_TYPE_MAPPING[item_model][query_field][2]!='date' and search_value.isdigit():
+        # 待查询字段不为日期类型，且搜索值为整数，则先转换为整数类型（后续字符串类型字段的查询可兼容整数搜索值）
+        search_value=int(search_value)
     # 注意到str类型的字段要求可以与已经被转换为int类型的搜索值兼容，反之则不行
     if isinstance(search_value, str) and field_type=='int':
         # 搜索值类型与模型字段所要求的类型不匹配
@@ -326,22 +334,31 @@ def query():
     if isinstance(search_value, str) and field_type=='date':
         try:
             search_value=date.fromisoformat(search_value)
+            print(f'{search_value=}')
         except ValueError:
             # 日期字符串格式错误
             return make_response(400, 'Invalid search_value')
     # 以下保证了数据模型存在、搜索值非空且类型合理、模型字段存在、搜索值与模型字段所要求的类型匹配或兼容、日期字符串已恰当转换
     # 正式查询
     if field_type in ('int', 'date'):
-        data_list=item_class.query.filter_by(**{query_field: search_value}).all()
+        data_list=(item_class.query
+                   .filter_by(**{query_field: search_value})
+                   .order_by(getattr(item_class, primary_key).asc())
+                   .all())
     else: # field_type=='str'
         # 字符串搜索值，则使用like查询，同时兼容被转换为int类型的搜索值
-        data_list=item_class.query.filter(model_field.like(f'%{str(search_value)}%')).all()
+        data_list=(item_class.query
+                   .filter(model_field.like(f'%{str(search_value)}%'))
+                   .order_by(getattr(item_class, primary_key).asc())
+                   .all())
     # 返回查询结果
     data_list=[item.to_dict() for item in data_list]
     return make_response(data={'fields': data_fields, 'list': data_list})
 
 def __parse_item_data(item_model:str, item_data:dict)\
         ->tuple[flask.Response, int]|tuple[type, dict[str, any]]:
+    # 导入模型的ORM类
+    from sqlalchemy import Integer, Boolean, Date
     # 导入Date类，需要用来解析日期字符串
     from datetime import date
     if not item_data:
@@ -354,10 +371,11 @@ def __parse_item_data(item_model:str, item_data:dict)\
         return make_response(400, 'Unknown item_model')
     # 对数据模型字段进行进一步处理
     for field, value in item_data.items():
-        if getattr(item_class, field).type==int and isinstance(value, str) and value.isdigit():
+        print(f'Processing {field=} with {value=}, {getattr(item_class, field).type=}')
+        if isinstance(getattr(item_class, field).type, Integer) and isinstance(value, str) and value.isdigit():
             # 数值文本转换为整数类型
             item_data[field]=int(value)
-        if getattr(item_class, field).type==bool:
+        if isinstance(getattr(item_class, field).type, Boolean):
             assert value in ('True', 'False')
             # 布尔值文本转换为布尔类型
             item_data[field]=True if value=='True' else False
@@ -365,9 +383,9 @@ def __parse_item_data(item_model:str, item_data:dict)\
             # 处理空字符串
             if getattr(item_class, field).nullable:
                 item_data[field]=None
-            elif getattr(item_class, field).type==int:
+            elif isinstance(getattr(item_class, field).type, Integer):
                 item_data[field]=0
-        if field.endswith('_update_time') and isinstance(value, str):
+        if isinstance(getattr(item_class, field).type, Date) and isinstance(value, str) and field.endswith('_update_time'):
             # 解析日期字符串
             value=date.fromisoformat(value) if value else None
             item_data[field]=value
@@ -454,7 +472,6 @@ def edit_item():
 def delete_item():
     # 解析请求参数
     data=request.get_json()
-    print(f'Parsed submitted {data=}')
     item_model=data.get('item_model', '')
     item_data=data.get('item_data', dict())
     tp=__parse_item_data(item_model, item_data)
@@ -476,6 +493,7 @@ def delete_item():
         # 要删除的实例不存在
         return make_response(400, 'Unknown item_id')
     # 检查目标参数是否匹配
+    print(f'Checking:\n{item_data=}\nagainst\n{item.to_dict()=}')
     if not all(getattr(item, field)==value for field, value in item_data.items()):
         # 要删除的实例与请求参数不匹配
         return make_response(400, 'Unmatched item_data')

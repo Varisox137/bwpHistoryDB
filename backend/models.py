@@ -86,7 +86,7 @@ class Card_Version(db.Model):
 
     def to_dict(self):
         d={field: getattr(self, field) for field in self.fields}
-        d['card_update_time']=d['card_update_time'].strftime('%Y-%m-%d') if d['ss_update_time'] else None
+        d['card_update_time']=d['card_update_time'].strftime('%Y-%m-%d') if d['card_update_time'] else None
         return d
 
 if __name__=='__main__':

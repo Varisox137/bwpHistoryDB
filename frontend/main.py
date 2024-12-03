@@ -159,6 +159,7 @@ class MainInterface(QWidget):
         header_width=sum(
             self.table_widget.columnWidth(i) for i in range(self.table_widget.columnCount())
         )
+        print('field widths:', end=' ')
         [print(self.table_widget.columnWidth(i),end=' ') for i in range(self.table_widget.columnCount())]
         print(f'\n{header_width=}, {self.table_widget.width()=}')
         # 填充表格数据

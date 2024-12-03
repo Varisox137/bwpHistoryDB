@@ -237,6 +237,7 @@ class MainWindow(QMainWindow):
                 'search_value': search_value
             }
             response=client.post(url=f'{TARGET_HOST}{API_PREFIX}/query', json=query_data)
+            print(f'query response: {response.status_code}')
             if response.status_code!=200:
                 # 获取来自服务器的错误信息
                 error_msg=response.json()['message']
@@ -280,9 +281,21 @@ class MainWindow(QMainWindow):
         if not table:
             # 未选择数据表，则弹出警告窗口
             MessageBox('警告', '请先选择要新增条目的数据表！', self).show(); return False
-        self.edit_window=EditWindow(self,
-                                    model_name=self.interface.tablename_combobox.currentText(),
-                                    edit_mode='add')
+        self.edit_window=None
+        if hasattr(self.interface, 'row_checkboxes'):
+            # 已有选中行，检查是否唯一
+            selected_rows=[i for i, checkbox in enumerate(self.interface.row_checkboxes) if checkbox.isChecked()]
+            if len(selected_rows)==1:
+                # 唯一选中行的新增，视为复制选中的条目
+                selected_row=selected_rows[0]
+                self.edit_window=EditWindow(self,
+                                            model_name=table,
+                                            edit_mode='add',
+                                            original_row_data=self.interface.table_data[selected_row])
+        if self.edit_window is None:
+            self.edit_window=EditWindow(self,
+                                        model_name=self.interface.tablename_combobox.currentText(),
+                                        edit_mode='add')
         self.edit_window.show()
         self.setEnabled(False)
 
@@ -313,7 +326,6 @@ class MainWindow(QMainWindow):
             if isinstance(value, QDate):
                 date_field=field
                 value=value.toString('yyyy-MM-dd')
-            print(f'{field}={value}')
             item_data[field]=value
         # 未勾选日期字段时，将其设置为None
         if 'date_enabled' in item_data:
