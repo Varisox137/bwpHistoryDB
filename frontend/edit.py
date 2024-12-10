@@ -89,7 +89,7 @@ class EditInterface(QWidget):
                 date_checkbox.stateChanged.connect(lambda state: date_edit.setEnabled(date_checkbox.isChecked()))
                 # 设置既有值
                 original_value=data.get(field, None)
-                if original_value:
+                if original_value is not None:
                     date_edit.setDate(date.fromisoformat(original_value))
                     date_checkbox.setChecked(True)
                 else:
@@ -111,8 +111,8 @@ class EditInterface(QWidget):
                 combo_box.setObjectName(f'combo_box_{full_field_name}')
                 combo_box.addItems([str(value) for value in FIELDS_VALUE_LISTS[full_field_name]])
                 # 设置既有值
-                original_value=data.get(field, '')
-                if original_value:
+                original_value=data.get(field, None)
+                if original_value is not None:
                     combo_box.setCurrentText(str(original_value))
                 # 如果是删除模式，则禁止编辑
                 if self.mode=='delete':
@@ -124,9 +124,10 @@ class EditInterface(QWidget):
                 text_edit=TextEdit(parent=grid_widget)
                 text_edit.setObjectName(f'text_edit_{full_field_name}')
                 text_edit.setPlaceholderText('请输入描述文本')
+                text_edit.setMinimumHeight(100)
                 # 设置既有值
-                original_value=data.get(field, '')
-                if original_value:
+                original_value=data.get(field, None)
+                if original_value is not None:
                     text_edit.setPlainText(original_value)
                 # 如果是删除模式，则禁止编辑
                 if self.mode=='delete':
@@ -140,8 +141,8 @@ class EditInterface(QWidget):
                 line_edit.setPlaceholderText('请输入内容')
                 line_edit.setClearButtonEnabled(True)
                 # 设置既有值
-                original_value=data.get(field, '')
-                if original_value:
+                original_value=data.get(field, None)
+                if original_value is not None:
                     line_edit.setText(str(original_value))
                 # 如果是编辑模式且该字段是主键字段，则禁止编辑
                 if self.mode=='edit' and full_field_name in (

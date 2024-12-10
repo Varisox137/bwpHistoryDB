@@ -296,7 +296,9 @@ class MainWindow(QMainWindow):
             self.edit_window=EditWindow(self,
                                         model_name=self.interface.tablename_combobox.currentText(),
                                         edit_mode='add')
+        print(f'edit window created')
         self.edit_window.show()
+        print(f'edit window shown')
         self.setEnabled(False)
 
     def __try_edit_data(self, table:str, row:int):
@@ -305,7 +307,9 @@ class MainWindow(QMainWindow):
                                     model_name=table,
                                     edit_mode='edit',
                                     original_row_data=self.interface.table_data[row])
+        print(f'edit window created')
         self.edit_window.show()
+        print(f'edit window shown')
         self.setEnabled(False)
 
     def __try_delete_data(self, table:str, row:int):
@@ -314,7 +318,9 @@ class MainWindow(QMainWindow):
                                     model_name=table,
                                     edit_mode='delete',
                                     original_row_data=self.interface.table_data[row])
+        print(f'edit window created')
         self.edit_window.show()
+        print(f'edit window shown')
         self.setEnabled(False)
 
     def try_submit_data(self):
@@ -369,7 +375,7 @@ class MainWindow(QMainWindow):
         if not file_path: self.setEnabled(True); return False
         # 尝试解析CSV数据
         try:
-            df=pd.read_csv(file_path, encoding='utf-8', na_filter=False)
+            df=pd.read_csv(file_path, encoding='utf-8', na_filter=False, index_col=False)
         except:
             # 解析失败，弹出警告窗口
             MessageBox('警告', '无法解析CSV文件！', self).show()
@@ -437,11 +443,12 @@ class MainWindow(QMainWindow):
 
 class EditWindow(QMainWindow):
     def __init__(self, parent, model_name:str, edit_mode:str, original_row_data:dict=None):
+        print(f'creating edit window for {model_name=} {edit_mode=} {original_row_data=}')
         super().__init__()
         self.parent_main_window=parent
         self.interface=EditInterface(model_name, edit_mode, original_row_data)
         self.setCentralWidget(self.interface)
-        self.setFixedWidth(400)
+        self.setFixedWidth(500)
         operation='新增' if edit_mode=='add' else '修改'
         self.setWindowTitle(f'{operation}条目')
         self.setWindowIcon(QIcon('./appicon.ico'))

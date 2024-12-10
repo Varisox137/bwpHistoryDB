@@ -33,6 +33,7 @@ CONFIGS=dict()
 FIELDS_TYPE_MAPPING={
     'SS': {
         'ssid': (True, True, 'int'), # 是否数据库要求非空，是否在前端编辑时必填，字段类型
+        'ss_update_time': (False, False, 'date'), # 可空，非必填
         'ss_pack': (True, True, 'str'),
         'from_ssid': (False, False, 'int'), # 可空，非必填
         'ss_name': (True, True, 'str'),
@@ -41,7 +42,7 @@ FIELDS_TYPE_MAPPING={
     },
     'SS_Version': {
         'ssvid': (True, True, 'int'),
-        'ss_update_time': (False, False, 'date'), # 可空，非必填
+        'ssv_update_time': (False, False, 'date'), # 可空，非必填
         'ss_type': (True, True, 'str'),
         'ss_color': (True, True, 'str'),
         'ss_atk': (True, True, 'int'),
@@ -51,6 +52,7 @@ FIELDS_TYPE_MAPPING={
     },
     'Card': {
         'cid': (True, True, 'int'),
+        'card_update_time': (False, False, 'date'), # 可空，非必填
         'ssid': (False, False, 'int'), # 可空，非必填
         'card_name': (True, True, 'str'),
         'card_rarity': (True, True, 'str'),
@@ -59,7 +61,7 @@ FIELDS_TYPE_MAPPING={
     },
     'Card_Version': {
         'cvid': (True, True, 'int'),
-        'card_update_time': (False, False, 'date'), # 可空，非必填
+        'cv_update_time': (False, False, 'date'), # 可空，非必填
         'card_type': (True, True, 'str'),
         'card_level': (True, True, 'int'),
         'card_desc': (True, False, 'str'), # 非空，非必填，由前端改为空字符串
@@ -376,9 +378,9 @@ def __parse_item_data(item_model:str, item_data:dict)\
             # 数值文本转换为整数类型
             item_data[field]=int(value)
         if isinstance(getattr(item_class, field).type, Boolean):
-            assert value in ('True', 'False')
+            assert value in ('True', 'False', True, False)
             # 布尔值文本转换为布尔类型
-            item_data[field]=True if value=='True' else False
+            item_data[field]=True if value in ('True', True) else False
         if value=='':
             # 处理空字符串
             if getattr(item_class, field).nullable:

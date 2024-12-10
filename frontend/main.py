@@ -105,7 +105,8 @@ class MainInterface(QWidget):
         self.table_widget.setBorderRadius(8)
         self.table_widget.setBorderVisible(True)
         self.table_widget.setEditTriggers(TableWidget.EditTrigger.NoEditTriggers)
-        self.table_widget.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
+        self.table_widget.horizontalHeader().setDefaultSectionSize(150)
+        self.table_widget.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Fixed)
         # # 下方操作栏组件和布局
         bottom_operations_widget=QWidget(self)
         bottom_operations_widget.setObjectName('bottom_operations_widget')
@@ -141,6 +142,7 @@ class MainInterface(QWidget):
             {'id': 1, 'name': 'Abigail', 'field': 'DEPT', 'description': 'Department', 'time': '2000-01-01'},
             {'id': 2, 'name': 'Bob', 'field': 'SUPP', 'description': 'Supplier', 'time': '2020-12-31'},
             {'id': 3, 'name': 'Chris', 'field': 'EMP', 'description': 'Employee', 'time': '2024-08-31'},
+            {'id': 100, 'name': 'TEST', 'field': '', 'description': 'Testing long text'+'.'*200, 'time': '2024-12-31'}
         ]
         self.clear_and_fill_table(test_fields, test_data*10)
 
@@ -154,7 +156,6 @@ class MainInterface(QWidget):
         self.table_widget.setColumnCount(len(fields)+2)
         # # 设置表头的列名
         self.table_widget.setHorizontalHeaderLabels(['selection']+fields+['operations'])
-        self.table_widget.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
         # # 打印表头宽度
         header_width=sum(
             self.table_widget.columnWidth(i) for i in range(self.table_widget.columnCount())

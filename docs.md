@@ -52,34 +52,34 @@
 
 ##### “式神”表
 
-- SS(<u>ssid</u> INT, ss_pack VARCHAR(4), *from_ssid* INT, ss_name VARCHAR(10), *ssvid* INT)
-- 各字段分别表示：式神id，式神所属资料片版本（召唤物式神同于其从属式神），召唤物所从属的式神id（仅限召唤物），式神名称，当前采用的式神版本数据。
+- SS(<u>ssid</u> INT, ss_update_time DATE, ss_pack VARCHAR(4), *from_ssid* INT, ss_name VARCHAR(10), *ssvid* INT)
+- 各字段分别表示：式神id，式神更新版本数据的时间，式神所属资料片版本（召唤物式神同于其从属式神），召唤物所从属的式神id（仅限召唤物），式神名称，当前采用的式神版本数据。
 - 仅允许`from_ssid`字段为空值。
 - `from_ssid`字段（非空值时）指向“式神”表中的主键`ssid`（不允许是自身的`ssid`字段值）。`ssvid`字段指向“式神版本数据”表中的主键`ssvid`。
 
 ##### “式神版本数据”表
 
-- SS_Version(<u>ssvid</u> INT, ss_update_time DATE, ss_type VARCHAR(3), ss_color VARCHAR(2), ss_atk INT, ss_hp INT, ss_desc VARCHAR(200))
-- 各字段分别表示：式神版本数据id，式神版本数据的更新时间，式神类型（式神/召唤物），式神派系（红莲/苍叶/青岚/紫岩/无），式神基础攻击力，式神基础生命，式神基础能力描述。
-- 仅允许`ss_update_time`字段为空值、`ss_desc`字段为空字符串。
+- SS_Version(<u>ssvid</u> INT, ssv_update_time DATE, ss_type VARCHAR(3), ss_color VARCHAR(2), ss_atk INT, ss_hp INT, ss_desc VARCHAR(200))
+- 各字段分别表示：式神版本数据id，该式神版本的更新时间，式神类型（式神/召唤物），式神派系（红莲/苍叶/青岚/紫岩/无），式神基础攻击力，式神基础生命，式神基础能力描述。
+- 仅允许`ssv_update_time`字段为空值、`ss_desc`字段为空字符串。
 
 ##### “卡牌”表
 
-- Card(<u>cid</u> INT, *ssid* INT, card_name VARCHAR(10), card_rarity VARCHAR(3), *cvid* INT)
-- 各字段分别表示：卡牌id，卡牌所属的式神id，卡牌名称，卡牌稀有度（R/SR/SSR），当前采用的卡牌版本数据。
+- Card(<u>cid</u> INT, card_update_time DATE, *ssid* INT, card_name VARCHAR(10), card_rarity VARCHAR(3), *cvid* INT)
+- 各字段分别表示：卡牌id，卡牌更新版本数据的时间，卡牌所属的式神id，卡牌名称，卡牌稀有度（R/SR/SSR），当前采用的卡牌版本数据。
 - 仅允许`ssid`字段为空值。
 - `ssid`字段（非空值时）指向“式神”表中的主键`ssid`（可以是衍生式神，例如来自鬼使白的“魂狩”）。`cvid`字段指向“卡牌版本数据”表中的主键`cvid`。
 
 ##### “卡牌版本数据”表
 
-- Card_Version(<u>cvid</u> INT, card_update_time DATE, card_type CHAR(2), card_level INT, card_desc VARCHAR(200), card_has_target INT, \*\*fields)
-- 各字段分别表示：卡牌版本数据id，卡牌版本数据的更新时间，卡牌基本类型（法术/战斗/形态/幻境），卡牌等级（使用卡牌所需的式神勾玉等级），卡牌描述，卡牌是否要求有目标（0=无目标，1=有目标且无合法目标时不可使用，2=有目标但无合法目标时也可使用）。其中`**fields`实际为多组字段，分别用于记录法术牌、战斗牌、形态牌、幻境牌、觉醒等不同效果。
+- Card_Version(<u>cvid</u> INT, cv_update_time DATE, card_type CHAR(2), card_level INT, card_desc VARCHAR(200), card_has_target INT, \*\*fields)
+- 各字段分别表示：卡牌版本数据id，该卡牌版本的更新时间，卡牌基本类型（法术/战斗/形态/幻境），卡牌等级（使用卡牌所需的式神勾玉等级），卡牌描述，卡牌是否要求有目标（0=无目标，1=有目标且无合法目标时不可使用，2=有目标但无合法目标时也可使用）。其中`**fields`实际为多组字段，分别用于记录法术牌、战斗牌、形态牌、幻境牌、觉醒等不同效果。
 - 法术牌相关字段：暂无。
 - 战斗牌相关字段：(zd_atk INT, zd_shd INT)，分别表示：战斗牌临时攻击力，战斗牌护甲。
 - 形态牌相关字段：(xt_atk INT, xt_hp INT)，分别表示：形态牌基础攻击力，形态牌基础生命。
 - 幻境牌相关字段：(hj_dur INT)，表示：幻境牌基础耐久。
 - 觉醒相关字段：(incl_jx BOOL, jx_atk INT, jx_hp INT)，分别表示：卡牌是否含觉醒效果，觉醒效果（如有）的永久攻击力加成，觉醒效果（如有）的永久生命加成。
-- 以上所有字段中，仅允许`card_update_time`字段为空值、`card_desc`字段为空字符串。非自身卡牌类型的相关字段默认为0值。
+- 以上所有字段中，仅允许`cv_update_time`字段为空值、`card_desc`字段为空字符串。非自身卡牌类型的相关字段默认为0值。
 
 
 
@@ -142,4 +142,4 @@
 
 1. 在Win11系统下，前端应用程序从PyCharm运行时，可能出现`进程已结束，退出代码为 -1073740940 (0xC0000374)`的程序异常中止问题，例如在使用“用户注册”按钮切换到注册窗口，随后关闭窗口回到登录窗口，再次点击“用户注册”按钮的情况下，出现应用程序无响应、随后异常退出。类似地，正常使用同一个按钮达到两次时也可能会产生该异常退出（例如，在成功删除一个条目后，再次点击按钮尝试删除另一条目）。另外，直接关闭登录窗口时也可能出现此情况。该问题可能是由Qt库的C语言部分产生的堆损坏问题，暂时难以通过Python部分的程序编写来解决。
 
-2. 在学生宿舍WiFi网络环境下，后端服务器与前端应用程序在同一机器上运行时，前端应用程序的网络通信具有明显的较高延迟，但在电脑开启了VPN的情况下有明显好转，其原理未知。
+2. 在项目作者的电脑上，后端服务器与前端应用程序同时运行时，前端应用程序的网络通信具有明显的较高延迟，但在电脑开启了VPN的情况下有明显好转，其原理未知。
