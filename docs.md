@@ -128,9 +128,9 @@
 
 5. 设置后端服务器的运行配置：项目`backend`目录下创建或编辑`database_config.json`和`server_config.json`两份配置文件，调整数据库连接和后端服务器的运行配置。
 
-6. 运行后端服务器：项目根目录下使用终端输入执行``.venv\Scripts\activate`激活虚拟环境之后，先输入执行`cd backend`再输入执行`python app.py`即可在本地运行服务器。
+6. 运行后端服务器：项目根目录下使用终端输入执行`.venv\Scripts\activate`激活虚拟环境之后，先输入执行`cd backend`再输入执行`python app.py`即可在本地运行服务器。
 
-7. 运行前端应用程序：项目根目录下使用终端输入执行``.venv\Scripts\activate`激活虚拟环境之后，先输入执行`cd frontend`再输入执行`python qt_app.py`即可启动客户端。
+7. 运行前端应用程序：项目根目录下使用终端输入执行`.venv\Scripts\activate`激活虚拟环境之后，先输入执行`cd frontend`再输入执行`python qt_app.py`即可启动客户端。
 
 
 
